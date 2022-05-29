@@ -6,7 +6,9 @@ function type_to_text(t) {
 }
 
 function principal_to_short(t) {
-    return t.substr(0,11) + "..."
+  if (!t) return "";
+  
+  return t.toText().substr(0,11) + "..."
 }
 
 function App() {
@@ -90,8 +92,8 @@ function App() {
             <tr>
                 <td width="50">ID</td>
                 <td width="250">Type</td>
+                <td width="250">CanisterID</td>
                 <td width="300">Proposer</td>
-                {/* <td width="250">canister_id</td> */}
                 <td width="300">Approvers</td>
                 <td width="300">Refusers</td>
                 <td width="100">WasmHash</td>
@@ -105,13 +107,13 @@ function App() {
                         <tr key={data.id.toString()}>
                             <td width="50">{data.id.toString()}</td>
                             <td width="250">{type_to_text(data.ptype)}</td>
-                            <td width="300">{principal_to_short(data.proposer.toText())}</td>
-                            {/* <td width="250">{data.canister_id}</td> */}
+                            <td width="250">{principal_to_short(data.canister_id[0])}</td>
+                            <td width="300">{principal_to_short(data.proposer)}</td>
                             <td width="300">
                                 {
                                     data.approvers.map(a => {
                                         return (
-                                            <li key={principal_to_short(a.toText())}>{principal_to_short(a.toText())}</li>
+                                            <li key={principal_to_short(a)}>{principal_to_short(a)}</li>
                                         )
                                     })
                                 }
@@ -120,7 +122,7 @@ function App() {
                                 {
                                     data.refusers.map(a => {
                                         return (
-                                            <li key={principal_to_short(a.toText())}>{principal_to_short(a.toText())}</li>
+                                            <li key={principal_to_short(a)}>{principal_to_short(a)}</li>
                                         )
                                     })
                                 }
