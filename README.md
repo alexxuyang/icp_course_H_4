@@ -26,3 +26,4 @@ dfx deploy --with-cycles=5000000000000 --argument '(2, vec {principal "cnh44-cjh
 
 并同时观察前端页面
 
+[![Watch the video](https://github.com/alexxuyang/icp_course_H_4/blob/main/images/001.png)](https://youtu.be/_-YO9iXb3KM)
