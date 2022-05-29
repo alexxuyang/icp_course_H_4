@@ -1,6 +1,7 @@
 import type { Principal } from '@dfinity/principal';
 export type Canister = Principal;
 export type Canister__1 = Principal;
+export type Hash = number;
 export type ID = bigint;
 export type ID__1 = bigint;
 export type Owner = Principal;
@@ -10,6 +11,7 @@ export interface Proposal {
   'canister_id' : [] | [Canister],
   'refusers' : Array<Owner>,
   'finished' : boolean,
+  'wasm_code_hash' : [] | [Hash],
   'proposer' : Owner,
   'ptype' : ProposalType,
   'approvers' : Array<Owner>,
@@ -40,6 +42,7 @@ export interface cycle_manager {
   'get_owner_list' : () => Promise<Array<Owner__1>>,
   'get_permission' : (arg_0: Canister__1) => Promise<[] | [boolean]>,
   'get_proposal' : (arg_0: ID) => Promise<[] | [Proposal]>,
+  'get_proposals' : () => Promise<Array<Proposal>>,
   'greet' : (arg_0: string) => Promise<string>,
   'propose' : (
       arg_0: ProposalType__1,

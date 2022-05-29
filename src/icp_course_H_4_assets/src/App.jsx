@@ -1,44 +1,165 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { icp_course_H_4 } from "../../declarations/icp_course_H_4";
 
+function type_to_text(t) {
+    return Object.getOwnPropertyNames(t)[0]
+}
+
+function principal_to_short(t) {
+    return t.substr(0,11) + "..."
+}
+
 function App() {
-//   const [price, setPrice] = useState([]);
+  const [proposals, setProposals] = useState([]);
+  const [team, setTeam] = useState([]);
+  const [canisters, setCanisters] = useState([]);
+  const [canistersM, setCanistersM] = useState([]);
 
-  const [name, setName] = useState('');
-  const [message, setMessage] = useState('');
+  async function getProposals() {
+    const proposals = await icp_course_H_4.get_proposals();
+    setProposals(proposals);
+    console.log(proposals);
+  }
 
-  async function doGreet() {
-    const greeting = await icp_course_H_4.greet(name);
-    setMessage(greeting);
+  async function getTeam() {
+    const team = await icp_course_H_4.get_owner_list();
+    setTeam(team);
+    console.log(team);
+  }
+
+  async function getCanisters() {
+    const canisters = await icp_course_H_4.get_owned_canisters_list();
+    
+    let canistersM = new Array(canisters.length);
+
+    for(var i = 0; i < canisters.length; i++) {
+      canistersM[i] = await icp_course_H_4.get_permission(canisters[i]);
+    }
+
+    setCanisters(canisters);
+    setCanistersM(canistersM);
+
+    console.log(canisters);
+    console.log(canistersM);
   }
 
   useEffect(() => {
-    // getData();
+    getProposals();
+    getTeam();
+    getCanisters();
+
+    const interval = setInterval(() => {
+      getProposals();
+      getTeam();
+      getCanisters();
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   return (
-    <div style={{ "fontSize": "30px" }}>
-      <div style={{ "backgroundColor": "yellow" }}>
-        <p>Greetings, from DFINITY!</p>
-        <p>
-          {" "}
-          Type your message in the Name input field, then click{" "}
-          <b> Get Greeting</b> to display the result.
-        </p>
+    <div style={{ "fontSize": "20px" }}>
+      
+      <div style={{ "backgroundColor": "#e0b0ab", "fontSize": "30px" }}>
+        <p><b>DAO controlled cycles wallets!</b></p>
       </div>
-      <div style={{ margin: "30px" }}>
-        <input
-          id="name"
-          value={name}
-          onChange={(ev) => setName(ev.target.value)}
-        ></input>
-        <button onClick={doGreet}>Get Greeting!</button>
+      
+      <div style={{ "backgroundColor": "#d0cb8c", "fontSize": "30px" }}>
+        <p><b>DAO Team Members</b></p>
       </div>
-      <div>
-        Greeting is: "
-        <span style={{ color: "blue" }}>{message}</span>"
+        <table className="table table-striped">
+          <tbody>
+            {
+              team.map(t => {
+                return (
+                  <tr key={t.toString()}><td>{t.toString()}</td></tr>
+                )
+              })
+            }
+          </tbody>
+        </table>
+
+      <div style={{ "backgroundColor": "#8eee23", "fontSize": "30px" }}>
+        <p><b>Proposals List</b></p>
       </div>
+      
+        <div  style={{ "fontSize": "20px" }}>
+        <table className="table table-striped">
+            <thead className="thead-dark">
+            <tr>
+                <td width="50">ID</td>
+                <td width="250">Type</td>
+                <td width="300">Proposer</td>
+                {/* <td width="250">canister_id</td> */}
+                <td width="300">Approvers</td>
+                <td width="300">Refusers</td>
+                <td width="100">WasmHash</td>
+                <td width="100">Finished</td>
+            </tr>
+            </thead>
+            <tbody>
+            {
+                proposals.map(data => {
+                    return (
+                        <tr key={data.id.toString()}>
+                            <td width="50">{data.id.toString()}</td>
+                            <td width="250">{type_to_text(data.ptype)}</td>
+                            <td width="300">{principal_to_short(data.proposer.toText())}</td>
+                            {/* <td width="250">{data.canister_id}</td> */}
+                            <td width="300">
+                                {
+                                    data.approvers.map(a => {
+                                        return (
+                                            <li key={principal_to_short(a.toText())}>{principal_to_short(a.toText())}</li>
+                                        )
+                                    })
+                                }
+                            </td>
+                            <td width="300">
+                                {
+                                    data.refusers.map(a => {
+                                        return (
+                                            <li key={principal_to_short(a.toText())}>{principal_to_short(a.toText())}</li>
+                                        )
+                                    })
+                                }
+                            </td>
+                            <td width="100">{data.wasm_code_hash}</td>
+                            <td width="100">{data.finished.toString()}</td>
+                        </tr>
+                    )
+                })
+            }
+            </tbody>
+        </table>
+        </div>
+        
+        <div style={{ "backgroundColor": "#bdbdbd", "fontSize": "30px" }}>
+          <p><b>Installed Canisters List</b></p>
+        </div>
+
+        <table className="table table-striped">
+          <thead className="thead-dark">
+            <tr>
+                <td>Canister</td>
+                <td>DAO Managed</td>
+            </tr>
+            </thead>
+          <tbody>
+            {
+              canisters.map((t,index) => {
+                return (
+                  <tr key={t.toText()}>
+                    <td>{t.toText()}</td>
+                    <td>{canistersM[index].toString()}</td>
+                  </tr>
+                )
+              })
+            }
+          </tbody>
+        </table>
+
     </div>
   );
 }

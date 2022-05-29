@@ -2,6 +2,7 @@ import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
 import Debug "mo:base/Debug";
+import Iter "mo:base/Iter";
 import Blob "mo:base/Blob";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
@@ -22,7 +23,7 @@ actor class cycle_manager(m: Nat, list: [Types.Owner]) = self {
   var ownedCanisters : [Canister] = [];
 
   // map of ( Canister - Bool), value is true means this canister need multi-sig managed
-  var ownedCanisterPermissions : HashMap.HashMap<Canister, Bool> = HashMap.HashMap<Canister, Bool>(0, func(x: Canister,y: Canister) {x==y}, Principal.hash);
+  var canisterPermissions : HashMap.HashMap<Canister, Bool> = HashMap.HashMap<Canister, Bool>(0, func(x: Canister,y: Canister) {x==y}, Principal.hash);
   var ownerList : [Owner] = list;
 
   var M : Nat = m;
@@ -38,20 +39,24 @@ actor class cycle_manager(m: Nat, list: [Types.Owner]) = self {
 
     // only the canister that (permission = false) can add permission
     if (ptype == #addPermission) {
-      assert(ownedCanisterPermissions.get(Option.unwrap(canister_id)) == ?false);
+      assert(canisterPermissions.get(Option.unwrap(canister_id)) == ?false);
     };
 
     // only the canister that (permission = true) can remove permission
     if (ptype == #removePermission) {
-      assert(ownedCanisterPermissions.get(Option.unwrap(canister_id)) == ?true);
+      assert(canisterPermissions.get(Option.unwrap(canister_id)) == ?true);
     };
+
+    var wasm_code_hash : ?Types.Hash = null;
 
     if (ptype == #installCode) {
       assert(Option.isSome(wasm_code));
+      wasm_code_hash := ?Blob.hash(Option.unwrap(wasm_code));
     };
 
     if (ptype == #upgradeCode) {
       assert(Option.isSome(wasm_code));
+      wasm_code_hash := ?Blob.hash(Option.unwrap(wasm_code));
     };
 
     if (ptype != #createCanister) {
@@ -66,6 +71,7 @@ actor class cycle_manager(m: Nat, list: [Types.Owner]) = self {
     let proposal : Proposal = {
       id = proposals.size();
       wasm_code;
+			wasm_code_hash;
       ptype;
       proposer = msg.caller;
       canister_id;
@@ -83,7 +89,7 @@ actor class cycle_manager(m: Nat, list: [Types.Owner]) = self {
   };
 
   func is_canister_ops_need_no_permission(p: Proposal) : Bool {
-    Option.isSome(p.canister_id) and ownedCanisterPermissions.get(Option.unwrap(p.canister_id)) == ?false
+    Option.isSome(p.canister_id) and canisterPermissions.get(Option.unwrap(p.canister_id)) == ?false
       and p.ptype != #addPermission and p.ptype != #removePermission and p.ptype != #createCanister
   };
 
@@ -131,10 +137,10 @@ actor class cycle_manager(m: Nat, list: [Types.Owner]) = self {
 
       switch (proposal.ptype) {
         case (#addPermission) {
-          ownedCanisterPermissions.put(Option.unwrap(proposal.canister_id), true);
+          canisterPermissions.put(Option.unwrap(proposal.canister_id), true);
         };
         case (#removePermission) {
-          ownedCanisterPermissions.put(Option.unwrap(proposal.canister_id), false);
+          canisterPermissions.put(Option.unwrap(proposal.canister_id), false);
         };
         case (#createCanister) {
           let settings : IC.canister_settings = 
@@ -147,53 +153,63 @@ actor class cycle_manager(m: Nat, list: [Types.Owner]) = self {
 
           Cycles.add(1_000_000_000_000);
           let result = await ic.create_canister({settings = ?settings});
-
-          ownedCanisters := Array.append(ownedCanisters, [result.canister_id]);
-
-          ownedCanisterPermissions.put(result.canister_id, true);
-
-          proposal := Types.update_canister_id(proposal, result.canister_id);
+          let canister_id = result.canister_id;
+          ownedCanisters := Array.append(ownedCanisters, [canister_id]);
+          canisterPermissions.put(canister_id, true);
+          proposal := Types.update_canister_id(proposal, canister_id);
         };
         case (#installCode) {
+          let canister_id = Option.unwrap(proposal.canister_id);
+
           Cycles.add(1_000_000_000_000);
           await ic.install_code({
             arg = [];
             wasm_module = Blob.toArray(Option.unwrap(proposal.wasm_code));
             mode = #install;
-            canister_id = Option.unwrap(proposal.canister_id);
+            canister_id;
           });
         };
         case (#upgradeCode) {
+          let canister_id = Option.unwrap(proposal.canister_id);
+
           Cycles.add(1_000_000_000_000);
           await ic.install_code({
             arg = [];
             wasm_module = Blob.toArray(Option.unwrap(proposal.wasm_code));
             mode = #upgrade;
-            canister_id = Option.unwrap(proposal.canister_id);
+            canister_id;
           });
         };
         case (#uninstallCode) {
+          let canister_id = Option.unwrap(proposal.canister_id);
+
           Cycles.add(1_000_000_000_000);
           await ic.uninstall_code({
-            canister_id = Option.unwrap(proposal.canister_id);
+            canister_id;
           });
         };
         case (#startCanister) {
+          let canister_id = Option.unwrap(proposal.canister_id);
+
           Cycles.add(1_000_000_000_000);
           await ic.start_canister({
-            canister_id = Option.unwrap(proposal.canister_id);
+            canister_id;
           });
         };
         case (#stopCanister) {
+          let canister_id = Option.unwrap(proposal.canister_id);
+
           Cycles.add(1_000_000_000_000);
           await ic.stop_canister({
-            canister_id = Option.unwrap(proposal.canister_id);
+            canister_id;
           });
         };
         case (#deleteCanister) {
+          let canister_id = Option.unwrap(proposal.canister_id);
+
           Cycles.add(1_000_000_000_000);
           await ic.delete_canister({
-            canister_id = Option.unwrap(proposal.canister_id);
+            canister_id;
           });
         };
       };
@@ -229,10 +245,14 @@ actor class cycle_manager(m: Nat, list: [Types.Owner]) = self {
   };
 
   public query func get_permission(id: Canister) : async ?Bool {
-    ownedCanisterPermissions.get(id)
+    canisterPermissions.get(id)
   };
 
   public query func get_proposal(id: ID) : async ?Proposal {
     proposals.getOpt(id)
+  };
+
+  public query func get_proposals() : async [Proposal] {
+    proposals.toArray()
   };
 };

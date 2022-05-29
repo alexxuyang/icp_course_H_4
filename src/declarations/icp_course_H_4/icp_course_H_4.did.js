@@ -3,6 +3,7 @@ export const idlFactory = ({ IDL }) => {
   const ID = IDL.Nat;
   const ID__1 = IDL.Nat;
   const Canister = IDL.Principal;
+  const Hash = IDL.Nat32;
   const ProposalType = IDL.Variant({
     'stopCanister' : IDL.Null,
     'upgradeCode' : IDL.Null,
@@ -19,6 +20,7 @@ export const idlFactory = ({ IDL }) => {
     'canister_id' : IDL.Opt(Canister),
     'refusers' : IDL.Vec(Owner),
     'finished' : IDL.Bool,
+    'wasm_code_hash' : IDL.Opt(Hash),
     'proposer' : Owner,
     'ptype' : ProposalType,
     'approvers' : IDL.Vec(Owner),
@@ -48,6 +50,7 @@ export const idlFactory = ({ IDL }) => {
     'get_owner_list' : IDL.Func([], [IDL.Vec(Owner__1)], ['query']),
     'get_permission' : IDL.Func([Canister__1], [IDL.Opt(IDL.Bool)], ['query']),
     'get_proposal' : IDL.Func([ID], [IDL.Opt(Proposal)], ['query']),
+    'get_proposals' : IDL.Func([], [IDL.Vec(Proposal)], ['query']),
     'greet' : IDL.Func([IDL.Text], [IDL.Text], []),
     'propose' : IDL.Func(
         [ProposalType__1, IDL.Opt(Canister__1), IDL.Opt(IDL.Vec(IDL.Nat8))],
