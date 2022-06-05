@@ -31,3 +31,6 @@ dfx deploy --with-cycles=5000000000000 --argument '(2, vec {principal "cnh44-cjh
 
 
 [![Watch the video](https://github.com/alexxuyang/icp_course_H_4/blob/main/images/001.png)](https://youtu.be/_-YO9iXb3KM)
+
+
+同时也实现了继承IIs的功能，参见这个[视频](https://youtu.be/oNFTLreH0eM)

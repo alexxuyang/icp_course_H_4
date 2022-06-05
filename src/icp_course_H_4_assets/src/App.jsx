@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { icp_course_H_4 } from "../../declarations/icp_course_H_4";
+import { AuthClient } from "@dfinity/auth-client";
+
+let authClient;
 
 function type_to_text(t) {
     return Object.getOwnPropertyNames(t)[0]
@@ -26,6 +29,21 @@ function App() {
   const [team, setTeam] = useState([]);
   const [canisters, setCanisters] = useState([]);
   const [canistersM, setCanistersM] = useState([]);
+  const [principal, setPrincipal] = useState('');
+
+  async function auth() {
+    authClient = await AuthClient.create();
+  }
+
+  function handClick() {
+    authClient.login({
+      identityProvider: "https://identity.ic0.app/",
+      onSuccess: () => {
+        const identity = authClient.getIdentity();
+        setPrincipal(identity.getPrincipal().toText());
+      }
+    });
+  }
 
   async function getProposals() {
     const proposals = await icp_course_H_4.get_proposals();
@@ -56,6 +74,8 @@ function App() {
   }
 
   useEffect(() => {
+    auth();
+
     getProposals();
     getTeam();
     getCanisters();
@@ -73,6 +93,12 @@ function App() {
   return (
     <div style={{ "fontSize": "20px" }}>
       
+      <button type="button" className=".btn-primary" onClick={handClick}>登录</button>
+
+      <div style={{ "backgroundColor": "#AAB7B8", "fontSize": "30px" }}>
+        <p>已登录用户Principal：<b>{principal}</b></p>
+      </div>
+
       <div style={{ "backgroundColor": "#e0b0ab", "fontSize": "30px" }}>
         <p><b>DAO controlled cycles wallets!</b></p>
       </div>
