@@ -13,7 +13,7 @@ module {
 		id: ID;
 		proposer: Owner;
 		wasm_code:  ?Blob; // valid only for install code or upgrade code
-		wasm_code_hash: ?Hash; // valid only for install code or upgrade code
+		wasm_code_hash: [Nat8]; // valid only for install code or upgrade code
 		ptype: ProposalType;
 		canister_id:  ?Canister; // can be null only for create canister case
 		approvers: [Owner];

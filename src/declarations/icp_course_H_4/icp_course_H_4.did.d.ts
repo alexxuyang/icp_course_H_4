@@ -1,7 +1,6 @@
 import type { Principal } from '@dfinity/principal';
 export type Canister = Principal;
 export type Canister__1 = Principal;
-export type Hash = number;
 export type ID = bigint;
 export type ID__1 = bigint;
 export type Owner = Principal;
@@ -11,7 +10,7 @@ export interface Proposal {
   'canister_id' : [] | [Canister],
   'refusers' : Array<Owner>,
   'finished' : boolean,
-  'wasm_code_hash' : [] | [Hash],
+  'wasm_code_hash' : Array<number>,
   'proposer' : Owner,
   'ptype' : ProposalType,
   'approvers' : Array<Owner>,

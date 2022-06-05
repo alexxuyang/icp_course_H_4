@@ -9,6 +9,8 @@ import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Cycles "mo:base/ExperimentalCycles";
 
+import SHA256 "mo:sha256/SHA256";
+
 import IC "./ic";
 import Types "./types";
 
@@ -47,16 +49,16 @@ actor class cycle_manager(m: Nat, list: [Types.Owner]) = self {
       assert(canisterPermissions.get(Option.unwrap(canister_id)) == ?true);
     };
 
-    var wasm_code_hash : ?Types.Hash = null;
+    var wasm_code_hash : [Nat8] = [];
 
     if (ptype == #installCode) {
       assert(Option.isSome(wasm_code));
-      wasm_code_hash := ?Blob.hash(Option.unwrap(wasm_code));
+      wasm_code_hash := SHA256.sha256(Blob.toArray(Option.unwrap(wasm_code)));
     };
 
     if (ptype == #upgradeCode) {
       assert(Option.isSome(wasm_code));
-      wasm_code_hash := ?Blob.hash(Option.unwrap(wasm_code));
+      wasm_code_hash := SHA256.sha256(Blob.toArray(Option.unwrap(wasm_code)));
     };
 
     if (ptype != #createCanister) {

@@ -45,13 +45,12 @@ type Proposal =
    ptype: ProposalType;
    refusers: vec Owner;
    wasm_code: opt blob;
-   wasm_code_hash: opt Hash;
+   wasm_code_hash: vec nat8;
  };
 type Owner__1 = principal;
 type Owner = principal;
 type ID__1 = nat;
 type ID = nat;
-type Hash = nat32;
 type Canister__1 = principal;
 type Canister = principal;
 service : (nat, vec Owner) -> cycle_manager

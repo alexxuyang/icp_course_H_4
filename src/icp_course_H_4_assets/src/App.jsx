@@ -11,6 +11,16 @@ function principal_to_short(t) {
   return t.toText().substr(0,11) + "..."
 }
 
+function toHexString(byteArray) {
+  if (byteArray.length === 0) return;
+
+  let result = Array.from(byteArray, function(byte) {
+    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+  }).join('');
+
+  return result.substr(0, 4) + "...." + result.substr(-4);
+}
+
 function App() {
   const [proposals, setProposals] = useState([]);
   const [team, setTeam] = useState([]);
@@ -96,7 +106,7 @@ function App() {
                 <td width="300">Proposer</td>
                 <td width="300">Approvers</td>
                 <td width="300">Refusers</td>
-                <td width="100">WasmHash</td>
+                <td width="100">WasmHash(SHA256)</td>
                 <td width="100">Finished</td>
             </tr>
             </thead>
@@ -127,7 +137,7 @@ function App() {
                                     })
                                 }
                             </td>
-                            <td width="100">{data.wasm_code_hash}</td>
+                            <td width="100">{toHexString(data.wasm_code_hash)}</td>
                             <td width="100">{data.finished.toString()}</td>
                         </tr>
                     )
