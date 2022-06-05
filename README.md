@@ -57,8 +57,12 @@ dfx deploy --with-cycles=5000000000000 --argument '(2, vec {principal "cnh44-cjh
 
 以上步骤1、2、3、5、6、7都是通过2/3多签方式
 
+自动测试的过程，可以参见这个[视频](https://youtu.be/Rnbikpvwb9Q)  
 
-自动测试的裹层，可以参见这个[视频](https://youtu.be/Rnbikpvwb9Q)
+注意该演示过程中，由于第2、6步骤将wasm code上传到服务端并实时在服务端计算wasm code的SHA256值。
 
+该步骤非常耗时，第一次 0:48 到 1:18 半分钟时间，第二次 1:40 到 2:08 28秒的时间。
+
+如果使用Base库中的hash算法（非常快），可以参见这个[视频](https://youtu.be/_-YO9iXb3KM)
 
 同时也实现了集成IIs的功能，参见这个[视频](https://youtu.be/oNFTLreH0eM)
